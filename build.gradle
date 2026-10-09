@@ -1,0 +1,108 @@
+buildscript {
+    repositories {
+        maven { url = "https://maven.minecraftforge.net" }
+        maven { url = "https://repo.spongepowered.org/maven" }
+    }
+    dependencies {
+        classpath "org.spongepowered:mixingradle:0.7.+"
+    }
+}
+
+plugins {
+    id "net.minecraftforge.gradle" version "[6.0,6.2)"
+}
+
+apply plugin: "java"
+apply plugin: "org.spongepowered.mixin"
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = "${archives_base_name}-${mc_version}"
+version = "${mod_version}"
+group = "${maven_group}"
+
+minecraft {
+    mappings channel: "official", version: "${mc_version}"
+
+    runs {
+        configureEach {
+            workingDirectory project.file("run")
+
+            property "forge.logging.markers", "REGISTRIES"
+            property "forge.logging.console.level", "debug"
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+            property "forge.enabledGameTestNamespaces", "${mod_id}"
+        }
+
+        server {
+            property "forge.enabledGameTestNamespaces", "${mod_id}"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "CurseForge"
+        url = "https://www.cursemaven.com"
+    }
+    maven {
+        name = "MineColonies"
+        url = "https://ldtteam.jfrog.io/ldtteam/modding"
+    }
+    maven {
+        name = "Sponge"
+        url = "https://repo.spongepowered.org/maven"
+    }
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_api_version}"
+    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:${mixin_extras_version}")) {
+        jarJar.ranged(it, "[${mixin_extras_version},)")
+    }
+
+    // Required MineColonies dependencies
+    implementation fg.deobf("com.ldtteam:minecolonies:${minecolonies_version}")
+    implementation fg.deobf("com.ldtteam:structurize:${structurize_version}")
+    implementation fg.deobf("com.ldtteam:multipiston:${multipiston_version}")
+    implementation fg.deobf("com.ldtteam:blockui:${blockui_version}")
+    implementation fg.deobf("com.ldtteam:domum_ornamentum:${domumornamentum_version}:universal")
+}
+
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    config "${mod_id}.mixins.json"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = 17
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+            "Specification-Title": "${mod_id}",
+            "Specification-Vendor": "BoostColony",
+            "Specification-Version": "1",
+            "Implementation-Title": project.name,
+            "Implementation-Version": project.jar.archiveVersion,
+            "Implementation-Vendor": "BoostColony",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+            "MixinConfigs": "${mod_id}.mixins.json"
+        ])
+    }
+    finalizedBy 'reobfJar'
+}

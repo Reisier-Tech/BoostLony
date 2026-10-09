@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.boostcolony.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "boostcolony.refmap.json",
+  "mixins": [
+    "AbstractEntityAIStructureMixin",
+    "AbstractEntityAIInteractMixin",
+    "CitizenSkillHandlerMixin",
+    "CitizenDataMixin"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,34 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="boostcolony"
+version="1.0.0"
+displayName="BoostColony"
+authors="Developer"
+description='''
+BoostColony - MineColonies Addon.
+Maximizes citizen levels and stats, and boosts building speed, destroying speed, and block placement range without modifying the original MineColonies configuration.
+'''
+
+[[dependencies.boostcolony]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.boostcolony]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.boostcolony]]
+    modId="minecolonies"
+    mandatory=true
+    versionRange="[1.20.1,)"
+    ordering="AFTER"
+    side="BOTH"
