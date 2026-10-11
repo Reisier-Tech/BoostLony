@@ -8,7 +8,9 @@
     "ResearchEffectManagerMixin",
     "EntityAIStructureBuilderMixin",
     "AbstractEntityAIInteractMixin",
-    "AbstractEntityAIStructureMixin"
+    "AbstractEntityAIStructureMixin",
+    "AbstractEntityAIBasicMixin",
+    "EntityAIWorkDeliverymanMixin"
   ],
   "client": [],
   "injectors": {
