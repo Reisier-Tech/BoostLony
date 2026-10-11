@@ -38,11 +38,14 @@ public class BoostColonyCommands {
 
     private static int showStatus(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack source = ctx.getSource();
+        int placeBurst = (int) Math.min(100.0, Math.max(1.0, BoostColonyConfig.SERVER.placeSpeed.get()));
+        int breakBurst = (int) Math.min(100.0, Math.max(1.0, BoostColonyConfig.SERVER.breakSpeed.get()));
+
         source.sendSuccess(() -> Component.literal("=== BoostColony Status ===").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), false);
         source.sendSuccess(() -> Component.literal("Block Place Speed: ").withStyle(ChatFormatting.YELLOW)
-            .append(Component.literal(BoostColonyConfig.SERVER.placeSpeed.get() + "x").withStyle(ChatFormatting.GREEN)), false);
+            .append(Component.literal(BoostColonyConfig.SERVER.placeSpeed.get() + "x (Rapid burst: up to " + placeBurst + " blocks/tick)").withStyle(ChatFormatting.GREEN)), false);
         source.sendSuccess(() -> Component.literal("Block Break Speed: ").withStyle(ChatFormatting.YELLOW)
-            .append(Component.literal(BoostColonyConfig.SERVER.breakSpeed.get() + "x").withStyle(ChatFormatting.GREEN)), false);
+            .append(Component.literal(BoostColonyConfig.SERVER.breakSpeed.get() + "x (Rapid burst: up to " + breakBurst + " blocks/tick)").withStyle(ChatFormatting.GREEN)), false);
         source.sendSuccess(() -> Component.literal("Worker Reach Range: ").withStyle(ChatFormatting.YELLOW)
             .append(Component.literal(BoostColonyConfig.SERVER.placeBlockRange.get() + " blocks").withStyle(ChatFormatting.GREEN)), false);
         return 1;
@@ -53,7 +56,8 @@ public class BoostColonyCommands {
         BoostColonyConfig.SERVER.placeSpeed.set(multiplier);
         BoostColonyConfig.SERVER_SPEC.save();
 
-        ctx.getSource().sendSuccess(() -> Component.literal("Updated BoostColony place speed to " + multiplier + "x.")
+        int burst = (int) Math.min(100.0, Math.max(1.0, multiplier));
+        ctx.getSource().sendSuccess(() -> Component.literal("Updated BoostColony place speed to " + multiplier + "x (Rapid burst: up to " + burst + " blocks/tick).")
             .withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
@@ -63,7 +67,8 @@ public class BoostColonyCommands {
         BoostColonyConfig.SERVER.breakSpeed.set(multiplier);
         BoostColonyConfig.SERVER_SPEC.save();
 
-        ctx.getSource().sendSuccess(() -> Component.literal("Updated BoostColony break/mine speed to " + multiplier + "x.")
+        int burst = (int) Math.min(100.0, Math.max(1.0, multiplier));
+        ctx.getSource().sendSuccess(() -> Component.literal("Updated BoostColony break/mine speed to " + multiplier + "x (Rapid burst: up to " + burst + " blocks/tick).")
             .withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
