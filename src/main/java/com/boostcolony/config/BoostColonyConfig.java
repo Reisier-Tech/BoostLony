@@ -15,8 +15,8 @@ public class BoostColonyConfig {
             builder.comment("Speed multiplier for placing blocks (1.0 = vanilla, 5.0 = 5x faster, up to 100x).");
             placeSpeed = builder.defineInRange("placeSpeed", 5.0D, 1.0D, 100.0D);
 
-            builder.comment("Speed multiplier for breaking/destroying blocks (1.0 = vanilla, 5.0 = 5x faster, up to 100x).");
-            breakSpeed = builder.defineInRange("breakSpeed", 5.0D, 1.0D, 100.0D);
+            builder.comment("Speed multiplier for breaking/destroying blocks (1.0 = vanilla, 10.0 = 10x faster, up to 100x).");
+            breakSpeed = builder.defineInRange("breakSpeed", 10.0D, 1.0D, 100.0D);
 
             builder.comment("Maximum interaction/reach range in blocks for workers (vanilla is 5-12 blocks, up to 64).");
             placeBlockRange = builder.defineInRange("placeBlockRange", 16, 5, 64);

@@ -166,6 +166,9 @@ public abstract class AbstractEntityAIStructureMixin {
         cir.setReturnValue(AIWorkerState.START_WORKING);
     }
 
+    /**
+     * Rapid burst execution for placing and breaking blocks per tick.
+     */
     @Inject(method = "structureStep", at = @At("RETURN"), cancellable = true, remap = false)
     private void onStructureStepBurst(CallbackInfoReturnable<IAIState> cir) {
         if (IN_BURST.get()) {
@@ -173,11 +176,11 @@ public abstract class AbstractEntityAIStructureMixin {
         }
 
         IAIState currentRet = cir.getReturnValue();
-        if (currentRet != AIWorkerState.BUILDING_STEP && currentRet != this.getCurrentState()) {
+        if (currentRet != AIWorkerState.BUILDING_STEP && currentRet != AIWorkerState.MINE_BLOCK && currentRet != this.getCurrentState()) {
             return;
         }
 
-        int limit = (int) Math.min(100.0, Math.max(1.0, BoostColonyConfig.SERVER.placeSpeed.get()));
+        int limit = (int) Math.min(100.0, Math.max(1.0, Math.max(BoostColonyConfig.SERVER.placeSpeed.get(), BoostColonyConfig.SERVER.breakSpeed.get())));
         if (limit <= 1) {
             return;
         }
@@ -189,6 +192,12 @@ public abstract class AbstractEntityAIStructureMixin {
 
         IN_BURST.set(true);
         try {
+            // If the initial step returned MINE_BLOCK, destroy the block immediately
+            if (currentRet == AIWorkerState.MINE_BLOCK && this.blockToMine != null) {
+                currentRet = this.doMining();
+                cir.setReturnValue(currentRet);
+            }
+
             for (int i = 1; i < limit; i++) {
                 if (!this.isThereAStructureToBuild()) {
                     break;
@@ -206,11 +215,13 @@ public abstract class AbstractEntityAIStructureMixin {
                 currentRet = this.structureStep();
                 cir.setReturnValue(currentRet);
 
-                if (currentRet != AIWorkerState.BUILDING_STEP && currentRet != this.getCurrentState()) {
-                    break;
+                // If step found a block to mine/clear, mine it immediately in the same tick!
+                if (currentRet == AIWorkerState.MINE_BLOCK && this.blockToMine != null) {
+                    currentRet = this.doMining();
+                    cir.setReturnValue(currentRet);
                 }
 
-                if (this.blockToMine != null) {
+                if (currentRet != AIWorkerState.BUILDING_STEP && currentRet != this.getCurrentState()) {
                     break;
                 }
 
@@ -228,6 +239,9 @@ public abstract class AbstractEntityAIStructureMixin {
         }
     }
 
+    /**
+     * Rapid burst execution for mining/clearing blocks in bulk per tick.
+     */
     @Inject(method = "doMining", at = @At("RETURN"), cancellable = true, remap = false)
     private void onDoMiningBurst(CallbackInfoReturnable<IAIState> cir) {
         if (IN_BURST.get()) {

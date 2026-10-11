@@ -2,13 +2,18 @@ package com.boostcolony.mixin;
 
 import com.boostcolony.config.BoostColonyConfig;
 import com.minecolonies.api.colony.jobs.IJob;
+import com.minecolonies.api.entity.ai.JobStatus;
 import com.minecolonies.api.entity.ai.statemachine.states.IAIState;
 import com.minecolonies.api.util.Tuple;
 import com.minecolonies.core.colony.buildings.AbstractBuilding;
 import com.minecolonies.core.entity.ai.workers.AbstractAISkeleton;
 import com.minecolonies.core.entity.ai.workers.AbstractEntityAIBasic;
+import com.minecolonies.core.entity.ai.workers.AbstractEntityAIStructure;
+import com.minecolonies.core.util.citizenutils.CitizenItemUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -43,6 +48,37 @@ public abstract class AbstractEntityAIBasicMixin extends AbstractAISkeleton<IJob
 
     @Shadow(remap = false)
     protected abstract boolean tryTransferFromPosToWorkerIfNeeded(BlockPos pos, Tuple<Predicate<ItemStack>, Integer> needs);
+
+    @Shadow(remap = false)
+    protected abstract int getMostEfficientTool(BlockState blockState, BlockPos pos);
+
+    /**
+     * Allow builders to break/destroy blocks without needing tools.
+     * If a tool is in inventory, it is held; if not, blocks are destroyed bare-handed without tool requests.
+     */
+    @Inject(method = "holdEfficientTool", at = @At("HEAD"), cancellable = true, remap = false)
+    private void onHoldEfficientTool(BlockState blockState, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+        int slot = this.getMostEfficientTool(blockState, pos);
+        if (slot >= 0) {
+            if (this.worker != null && this.worker.getCitizenData() != null) {
+                this.worker.getCitizenData().setJobStatus(JobStatus.WORKING);
+                CitizenItemUtils.setHeldItem(this.worker, InteractionHand.MAIN_HAND, slot);
+            }
+            cir.setReturnValue(true);
+            return;
+        }
+
+        // For builders (AbstractEntityAIStructure), allow tool-less block destruction:
+        if ((Object) this instanceof AbstractEntityAIStructure) {
+            if (this.worker != null) {
+                if (this.worker.getCitizenData() != null) {
+                    this.worker.getCitizenData().setJobStatus(JobStatus.WORKING);
+                }
+                CitizenItemUtils.removeHeldItem(this.worker);
+            }
+            cir.setReturnValue(true);
+        }
+    }
 
     /**
      * Expand the reach distance for citizens interacting with work positions/chests.
