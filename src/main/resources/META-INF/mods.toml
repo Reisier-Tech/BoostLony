@@ -8,8 +8,7 @@ version="1.0.0"
 displayName="BoostColony"
 authors="Developer"
 description='''
-BoostColony - MineColonies Addon.
-Maximizes citizen levels and stats, and boosts building speed, destroying speed, and block placement range without modifying the original MineColonies configuration.
+BoostColony - Lightweight MineColonies Addon that boosts block placing speed, block destroying speed, and worker reach range natively without touching state machines.
 '''
 
 [[dependencies.boostcolony]]
